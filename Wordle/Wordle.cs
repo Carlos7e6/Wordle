@@ -10,7 +10,7 @@ public class Wordle
         int randomNum = random.Next(palabras.Length);
 
         string palabraClave = palabras[randomNum];
-        palabraClave = palabraClave.ToUpper();//poso a majuscules les paraules clau
+        palabraClave = palabraClave.ToUpper();//poso a majuscules les paraules clau 
         string palabra;//declaro l'string que utilitzare
 
         bool presente;//un bool que sera per saber si una lletra está dintre de la paraula o no
