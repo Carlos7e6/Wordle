@@ -20,6 +20,7 @@ public class Wordle
         for (int count = 0; count < 6; count++)//aquest for fa de contador
         {
             Console.WriteLine("Wordle");//el titol del joc
+            Console.WriteLine("Endevina la paraula");
          ///////////////////////////////////////////////////////////////////
             for (int i = 0; i < count; i++)//aixo ho utilitzare per printar totes les paraules que mha donat l'usuari, per aixo el delimitador del for es el count dels torns
             {
