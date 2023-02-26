@@ -2,9 +2,6 @@
  DATE: 12/12/2022
  DESCRIPTION: Aquesta es la meva versió del famós joc Wordle. Projecto troncal de la M03, UF1, UF2 i UF3 */
 
-using System.Collections.Generic;
-using System.Diagnostics.SymbolStore;
-using System.Text;
 
 namespace Wordlee;
 public class Wordle
@@ -18,17 +15,21 @@ public class Wordle
 
     void Menu()
     {
+        Console.Clear();
         string select;
         string lang = @"\es\";
+        string generalPath = @"..\..\..\";
 
         do
         {
-            Console.WriteLine(File.ReadAllText(@"..\..\..\lang\es\welcome.txt"));
+            Console.Clear();
 
-            Console.WriteLine("1. Jugar partida ");
-            Console.WriteLine("2. Idioma");
-            Console.WriteLine("3. Registro victorias");
-            Console.WriteLine("4. Salir");
+            Console.WriteLine(File.ReadAllText(generalPath + @"\lang\" + lang + @"welcome.txt"));
+            Console.WriteLine(File.ReadAllText(generalPath + @"\lang\" + lang + @"newGame.txt"));
+            Console.WriteLine(File.ReadAllText(generalPath + @"\lang\" + lang + @"selectLang.txt"));
+            Console.WriteLine(File.ReadAllText(generalPath + @"\lang\" + lang + @"games.txt"));
+            Console.WriteLine(File.ReadAllText(generalPath + @"\lang\" + lang + @"exit.txt"));
+           
 
             select = Console.ReadLine();
 
@@ -38,7 +39,7 @@ public class Wordle
                     Game(lang);
                     break;
                 case "2":
-                    lang = Languague();
+                    lang = Languague(generalPath);
                     break;
                 case "3":
 
@@ -58,75 +59,80 @@ public class Wordle
         } while (select != "end");
     }
 
-    string Languague()
+    string Languague(string generaPath)
     {
         string lang ="";
         string option;
+        string pathLang = generaPath + @"lang\lang.txt";
+        string pathTitleLang = generaPath + @"lang\titleLang.txt";
 
-        Console.WriteLine("IDIOMA");
-        Console.WriteLine("1. CASTELLANO            2. CATALAN");
+        Console.Clear();
+        Console.WriteLine(File.ReadAllText(pathTitleLang));
+        Console.WriteLine();
+        Console.WriteLine(File.ReadAllText(pathLang));
         do
         {
             option = Console.ReadLine();
             switch (option)
             {
                 case "1":
-                    lang = "es";
+                    lang = @"\es\";
                     break;
                 case "2":
-                    lang = "cat";
+                    lang = @"\cat\";
                     break;
                 default:
                     Console.WriteLine("Valor no admitido");
                     break;
             }
-        }while(option != "1" || option != "2");
+        }while(option != "1" && option != "2");
 
         return lang;
     }
+
+    /// <summary>
+    /// Esta funcion es la que engobla toda la parte del gaming
+    /// </summary>
+    /// <param name="lang"></param>
     void Game(string lang)
     {
-
         string pathLang = @"..\..\..\lang" + lang;
         string pathWords = pathLang + @"\palabrasSin.txt";
-        string palabraClave = GetWord(pathWords);
+        string palabraClave;
+        string palabra = "";//declaro l'string que utilitzare
 
-        bool win = false;
+    
         int winIntento = 0;
         int numIntentos = 6;
-        bool start = false;
-        string palabra = "";//declaro l'string que utilitzare
-        bool ASCII;
 
-        palabraClave = palabraClave.ToLower();//poso a majuscules les paraules clau 
+        bool win = false;
+        bool ASCII;
 
 
         List<string> palabrasIntroducidas = new List<string>();
+        List<string[]> listOfWords = new List<string[]>();
         ConsoleColor[,] listOfColors = new ConsoleColor[numIntentos, 5];
-        List<string[]> list = new List<string[]>();
-
-        // string[] palabrasIntrocidas = new string[6];//les array de paraules introduides
-
 
         do//aquest for fa de contador
         {
+            palabraClave = GetWord(pathWords).ToLower();//poso a majuscules les paraules clau 
             palabrasIntroducidas.RemoveRange(0, palabrasIntroducidas.Count);
 
-            for (int i = 0; i <= numIntentos - 1 && palabra != "end"; i++)
+            for (int i = 0; i < numIntentos  && palabra != "end"; i++)
             {
-                if (start == true)
+
+                winIntento = i;
+                if (i != 0)
                 {
                     Console.Clear();
-                    PrintAllThings(palabrasIntroducidas, palabraClave, listOfColors, list, pathLang, winIntento);
+                    PrintAllThings(palabrasIntroducidas, palabraClave, listOfColors, listOfWords, pathLang, winIntento);
                 }
                 else
                 {
                     Console.Clear();
                     PrintTitleWordle();
-                    PrintTry(SelectFichCounter(i,pathLang),i);
-                    start = true;
+                    PrintTry(SelectFichCounter(winIntento,pathLang),winIntento);
                 }
-
                 do
                 {
                     ASCII = false;
@@ -145,17 +151,16 @@ public class Wordle
                 if (IsVictory(palabra,palabraClave))
                 {
                     win = true;
-                    palabra = "end";
+                    i = numIntentos;
                 }
-                else if (MaxTryTaked(i,numIntentos)) palabra = "end";
-                winIntento = i;
+                else if (MaxTryTaked(i,numIntentos)) i = numIntentos;
+
             }
+            EndPrint(win, palabraClave, palabrasIntroducidas, listOfColors, listOfWords, winIntento, pathLang);
 
         } while (palabra != "end");
 
-        VictoriaPrint(win, palabraClave, palabrasIntroducidas, listOfColors, list, winIntento,pathLang);
     }
-
     bool NotGoodASCII(char item)
     {
         return item < 97 || item > 123;
@@ -176,7 +181,7 @@ public class Wordle
     {
         return palabra == palabraClave;
     }
-    void VictoriaPrint(bool win, string palabraClave, List<string> palabrasIntroducidas, ConsoleColor[,] listOfColors, List<string[]> list, int winIntento, string pathLang)
+    void EndPrint(bool win, string palabraClave, List<string> palabrasIntroducidas, ConsoleColor[,] listOfColors, List<string[]> list, int winIntento, string pathLang)
     {
         Console.Clear();
         string[] letras = new string[palabraClave.Length];
@@ -429,7 +434,7 @@ public class Wordle
     string[] SelectFichCounter(int counter, string pathLang)
     {
         string pathAdiv = pathLang + @"\try.txt";
-        string num = @"..\..\..\nums\" + (6 - counter) + ".txt";
+        string num = @"..\..\..\nums\" + (counter) + ".txt";
         string[] tryFich = new string[2];
 
         tryFich[0] = File.ReadAllText(pathAdiv);
