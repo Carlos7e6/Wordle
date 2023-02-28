@@ -14,6 +14,9 @@ public class Wordle
 
     }
 
+    /// <summary>
+    /// Este es el menu principal del juego
+    /// </summary>
     void Menu()
     {
         Console.Clear();
@@ -27,7 +30,7 @@ public class Wordle
         {
             Console.Clear();
             PrintAllStart(pathLang);
-            if(counterFail != 0) PrintFailWord(pathLang);
+            if (counterFail != 0) PrintFailWord(pathLang);
 
             select = Console.ReadLine();
 
@@ -40,10 +43,11 @@ public class Wordle
                 case "2":
                     counterFail = 0;
                     lang = Languague(generalPath);
+                    pathLang = generalPath + "lang" + lang;
                     break;
                 case "3":
                     counterFail = 0;
-                    SeeHistorial(pathLang);
+                    SeeHistorial(pathLang, lang);
                     break;
                 case "4":
                     Console.Clear();
@@ -57,9 +61,14 @@ public class Wordle
         } while (NotTheEnd(select));
     }
 
+    /// <summary>
+    /// Esta la funcion donde aparece la interfaz del idioma
+    /// </summary>
+    /// <param name="generaPath"></param>
+    /// <returns>Retorna el lenguaje en un string</returns>
     string Languague(string generaPath)
     {
-        string lang ="";
+        string lang = "";
         string option;
         string pathLang = generaPath + @"lang\lang.txt";
         string pathTitleLang = generaPath + @"lang\titleLang.txt";
@@ -83,32 +92,21 @@ public class Wordle
                     Console.WriteLine("Valor no admitido");
                     break;
             }
-        }while(NotOptionValid(option));
+        } while (NotOptionValid(option));
 
         return lang;
-    }
-    /// <summary>
-    /// Devuelve TRUE cuando la opcion escogida NO es valida
-    /// </summary>
-    /// <param name="option"></param>
-    /// <returns>bool</returns>
-    public static bool NotOptionValid(string option)
-    {
-        return option != "1" && option != "2";
     }
 
     /// <summary>
     /// Esta funcion es la que engobla toda la parte del gaming
     /// </summary>
     /// <param name="lang"></param>
-    void Game(string pathLang,string generalPath, string lang)
+    void Game(string pathLang, string generalPath, string lang)
     {
-  
         string pathWords = pathLang + @"\palabrasSin.txt";
         string palabraClave;
         string palabra = "";//declaro l'string que utilitzare
 
-    
         int winIntento = 0;
         int numIntentos = 6;
 
@@ -126,26 +124,31 @@ public class Wordle
             palabraClave = GetWord(pathWords).ToLower();//poso a majuscules les paraules clau 
             palabrasIntroducidas.RemoveRange(0, palabrasIntroducidas.Count);
 
-            for (int i = 0; i < numIntentos  && palabra != "end"; i++)
+            for (int i = 0; i < numIntentos && palabra != "end"; i++)
             {
                 int counterFailWord = 0;
                 winIntento = i;
-                if (i != 0)
+                if (i != 0)//Aqui lo unico que no printo son las letras introducidas porque aun no hay
                 {
                     Console.Clear();
-                    Console.WriteLine(palabraClave);
                     PrintAllThings(palabrasIntroducidas, palabraClave, listOfColors, listOfWords, pathLang, winIntento, generalPath);
                 }
                 else
                 {
-                    Console.WriteLine(palabraClave);
                     Console.Clear();
                     PrintTitleWordle(pathLang);
-                    PrintTry(SelectFichCounter(winIntento,pathLang, generalPath),winIntento);
+                    PrintTry(SelectFichCounter(winIntento, pathLang, generalPath), winIntento);
                 }
                 do
                 {
-                    if(counterFailWord !=0) PrintFailWord(pathLang);
+                    if (counterFailWord != 0) PrintFailWord(pathLang);
+
+                    if (palabra.Contains("ç") && lang == @"\cat\") Console.WriteLine("El caràcter 'Ç' no està soportado");
+                    else if (palabra.Contains("ç") && lang == @"\es\") Console.WriteLine("El carácter 'Ç' no está soportado");
+
+                    if (palabra.Contains("ñ") && lang == @"\cat\") Console.WriteLine("El caràcter 'Ñ' no està soportat");
+                    else if (palabra.Contains("ñ") && lang == @"\es\") Console.WriteLine("El carácter 'Ñ' no está soportado");
+
                     ASCII = false;
                     Console.WriteLine();
                     palabra = Console.ReadLine().ToLower();//demano una paraula
@@ -160,21 +163,21 @@ public class Wordle
 
                 palabrasIntroducidas.Add(palabra);//la palabra introducida en este count (turno) es igual a la palabra
 
-                if (IsVictory(palabra,palabraClave))
+                if (IsVictory(palabra, palabraClave))//comprueba si se ha ganado
                 {
                     win = true;
                     i = numIntentos;
                 }
-                else if (MaxTryTaked(i,numIntentos)) i = numIntentos;
+                else if (MaxTryTaked(i, numIntentos)) i = numIntentos;
 
             }
-            if(palabra != "end") EndPrint(win, palabraClave, palabrasIntroducidas, listOfColors, listOfWords, winIntento, pathLang, generalPath,lang);
+            if (palabra != "end") EndPrint(win, palabraClave, palabrasIntroducidas, listOfColors, listOfWords, winIntento, pathLang, generalPath, lang);
             palabra = RetryGame(pathLang);
         } while (palabra != "end");
 
     }
     /// <summary>
-    /// El funcion devuelve TRUE cuando las palabras no estan dentro del codigo ASCII deseado
+    /// La funcion devuelve TRUE cuando las palabras no estan dentro del codigo ASCII deseado
     /// </summary>
     /// <param name="item"></param>
     /// <returns>bool</returns>
@@ -183,8 +186,19 @@ public class Wordle
         return item < 97 || item > 123;
     }
 
+
     /// <summary>
-    /// Retorna TRUE si la palabra recibida no es end
+    /// Devuelve TRUE cuando la opcion escogida NO es valida
+    /// </summary>
+    /// <param name="option"></param>
+    /// <returns>bool</returns>
+    public static bool NotOptionValid(string option)
+    {
+        return option != "1" && option != "2";
+    }
+
+    /// <summary>
+    /// Retorna TRUE si la palabra recibida no es "end"
     /// </summary>
     /// <param name="palabra"></param>
     /// <returns>bool</returns>
@@ -225,7 +239,7 @@ public class Wordle
     {
         return palabra == palabraClave;
     }
-    
+
     /// <summary>
     /// Devuelve "end" si no se quiere continuar el juego y "" si sí.
     /// </summary>
@@ -240,7 +254,7 @@ public class Wordle
         Console.WriteLine();
         Console.WriteLine(File.ReadAllText(pathLang + @"retry.txt"));
         Console.WriteLine(File.ReadAllText(pathLang + @"yn.txt"));
-        
+
         do
         {
             option = Console.ReadLine().ToLower();
@@ -273,7 +287,7 @@ public class Wordle
     }
 
     /// <summary>
-    /// Este procedimiento escribe en el documento historail
+    /// Este procedimiento escribe en el documento historial
     /// </summary>
     /// <param name="pathLang"></param>
     /// <param name="intentos"></param>
@@ -284,7 +298,7 @@ public class Wordle
         Console.WriteLine(File.ReadAllText(pathLang + @"\yourName.txt"));
         string player = Console.ReadLine();
 
-        var gamePlayer = CreatePlayer(player, lang.ToUpper(), palabraClave, palabrasIntr,intentos, color, dateOf);
+        var gamePlayer = CreatePlayer(player, lang.ToUpper(), palabraClave, palabrasIntr, intentos, color, dateOf);
 
         using StreamWriter sw = File.AppendText(pathLang + @"\historial.txt");
         {
@@ -292,7 +306,11 @@ public class Wordle
         }
     }
 
-    void SeeHistorial(string pathLang)
+    /// <summary>
+    /// Utilizamos este procedimiento para ver el historial
+    /// </summary>
+    /// <param name="pathLang"></param>
+    void SeeHistorial(string pathLang, string lang)
     {
         Console.Clear();
         Console.WriteLine();
@@ -301,27 +319,40 @@ public class Wordle
         using (StreamReader sr = new StreamReader(pathLang + @"\historial.txt"))
         {
             string lane;
-            while((lane = sr.ReadLine())!= null)
+            while ((lane = sr.ReadLine()) != null)
             {
                 var game = JsonSerializer.Deserialize<PlayerGame>(lane);
                 Console.WriteLine();
-                Console.Write($"\tPlayer: {game.playerName} \tFecha: {game.date} \tIntentos: {game.contador} \tPalabraSecreta: ");
-                Console.ForegroundColor = game.color;
-                Console.Write(game.secretWord);
-                Console.ResetColor();
-                Console.Write("\tPalabras: ");
-
+                if (lang == @"\es\")
+                {
+                    Console.Write($"\tPlayer: {game.playerName} \tFecha: {game.date} \tIntentos: {game.contador} \tPalabraSecreta: ");
+                    Console.ForegroundColor = game.color;
+                    Console.Write(game.secretWord);
+                    Console.ResetColor();
+                    Console.Write("\tPalabras: ");
+                }
+                else
+                {
+                    Console.Write($"\tPlayer: {game.playerName} \tData: {game.date} \tIntents: {game.contador} \tParaulaSecreta: ");
+                    Console.ForegroundColor = game.color;
+                    Console.Write(game.secretWord);
+                    Console.ResetColor();
+                    Console.Write("\tParaules: ");
+                }
                 foreach (var item in game.listWord)
                 {
-                    Console.Write(" | "+ item);
+                    Console.Write(" | " + item);
                 }
                 Console.WriteLine();
-            }
-        }
+                Console.WriteLine("\n\n");
 
-        Console.WriteLine("\n\n");
-        Console.WriteLine("[PULSA CUALQUIER INPUT PARA SALIR]");
-        Console.ReadLine();
+            }
+
+            if (lang == @"\es\") Console.WriteLine("[PULSA CUALQUIER INPUT PARA SALIR]");
+            else Console.WriteLine("[PREM QUALSEVOL INPUT PER SORTIR]");
+            Console.ReadLine();
+
+        }
     }
 
     /// <summary>
@@ -335,9 +366,7 @@ public class Wordle
     /// <param name="winIntento"></param>
     /// <param name="pathLang"></param>
     /// <param name="generalPath"></param>
-   
-
-    void EndPrint(bool win, string palabraClave, List<string> palabrasIntroducidas, ConsoleColor[,] listOfColors, List<string[]> list, int winIntento, string pathLang, string generalPath,string lang)
+    void EndPrint(bool win, string palabraClave, List<string> palabrasIntroducidas, ConsoleColor[,] listOfColors, List<string[]> list, int winIntento, string pathLang, string generalPath, string lang)
     {
         Console.Clear();
         string[] letras = new string[palabraClave.Length];
@@ -367,15 +396,17 @@ public class Wordle
         PrintLettersWinOrLose(letras, color);
         Console.ReadLine();
 
-        AddGameToFile(pathLang, winIntento, palabrasIntroducidas, palabraClave, color, DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss"),lang);
+        AddGameToFile(pathLang, winIntento, palabrasIntroducidas, palabraClave, color, DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"), lang);
 
         Console.Clear();//clean
     }
+
     /// <summary>
     /// Escoge una palabra aleatoria de la lista de archivos
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
+
     string GetWord(string path)
     {
         //path = @"..\..\..\palabras.txt";
@@ -407,11 +438,11 @@ public class Wordle
     /// <param name="listOfWords"></param>
     /// <param name="pathLang"></param>
     /// <param name="winIntento"></param>
-    void PrintAllThings(List<string> palabrasIntroducidas, string palabraClave, ConsoleColor[,] listOfColors, List<string[]> listOfWords,string pathLang,int winIntento, string generalPath)
+    void PrintAllThings(List<string> palabrasIntroducidas, string palabraClave, ConsoleColor[,] listOfColors, List<string[]> listOfWords, string pathLang, int winIntento, string generalPath)
     {
         PrintTitleWordle(pathLang);
-        PrintTry(SelectFichCounter(winIntento, pathLang,generalPath), (winIntento));
-        PrintSavedWords(palabrasIntroducidas, palabraClave, listOfColors, listOfWords,generalPath);
+        PrintTry(SelectFichCounter(winIntento, pathLang, generalPath), (winIntento));
+        PrintSavedWords(palabrasIntroducidas, palabraClave, listOfColors, listOfWords, generalPath);
     }
 
     /// <summary>
@@ -437,11 +468,11 @@ public class Wordle
                 else
                 {
 
-                    for (int z = 0; z < palabraCompr.Length; z++)//faig un altre for per poder avançar les lletres de la paraula introduida en qüestió
+                    for (int z = 0; z < palabraCompr.Length; z++)
                     {
-                        if ((palabraCompr[j] == palabraClave[z]) && (palabraCompr[z] != palabraClave[z]))
+                        if ((palabraCompr[j] == palabraClave[z]) && (palabraCompr[z] != palabraClave[z])) //printara amarrillo si esta dentro de la palabra y si la letra no esta acertada 
                         {
-                            presente = true; 
+                            presente = true;
                         }
                         // si la lletra esta en la paraula clau, presente es trie
                     }
@@ -493,9 +524,7 @@ public class Wordle
     /// <param name="colors"></param>
     void PrintLetters(List<string[]> palabras, ConsoleColor[,] colors)
     {
-        //   Console.WriteLine(File.ReadAllText(@"..\..\..\lang\es\welcome.txt"));
-
-        for (int i = 0; i < palabras.Count; i++)
+        for (int i = 0; i < palabras.Count; i++)//aqui asigno un string de la letra(imagen) a cada letra segun la posicion de la lista
         {
             string[] firtsLetter = palabras[i][0].Split("\r\n");
             string[] secondLetter = palabras[i][1].Split("\r\n");
@@ -503,7 +532,7 @@ public class Wordle
             string[] fourdLetter = palabras[i][3].Split("\r\n");
             string[] fifthLetter = palabras[i][4].Split("\r\n");
 
-            for (int z = 0; z < firtsLetter.GetLength(0); z++)
+            for (int z = 0; z < firtsLetter.GetLength(0); z++)//aqui printo de arriba a abajo todas las letras simultaneamente con el color deseado
             {
                 Console.WriteLine();
 
@@ -537,7 +566,7 @@ public class Wordle
     /// </summary>
     /// <param name="list"></param>
     /// <param name="color"></param>
-    void PrintLettersWinOrLose(string[] list, ConsoleColor color)
+    void PrintLettersWinOrLose(string[] list, ConsoleColor color) //Printo las letras pero esta vez solo me llega una palabra (string[]) con las respectivas imagenes de sus letras
     {
         string[] firtsLetter = list[0].Split("\r\n");
         string[] secondLetter = list[1].Split("\r\n");
@@ -579,7 +608,7 @@ public class Wordle
     public static string[] SelectFichCounter(int counter, string pathLang, string generalPath)
     {
         string pathAdiv = pathLang + @"\try.txt";
-        string num = generalPath + @"\nums\"+(counter) + ".txt";
+        string num = generalPath + @"\nums\" + (counter) + ".txt";
         string[] tryFich = new string[2];
 
         tryFich[0] = File.ReadAllText(pathAdiv);
@@ -589,7 +618,7 @@ public class Wordle
     }
 
     /// <summary>
-    /// Me printa el los intentos con los ficheros que he seleccionado previamente
+    /// Este procedimiento printa los intentos con los ficheros que he seleccionado previamente
     /// </summary>
     /// <param name="cabecera"></param>
     /// <param name="i"></param>
@@ -603,15 +632,16 @@ public class Wordle
             Console.WriteLine();
             Console.Write(titulo[j]);
 
-            if( i > 3) Console.ForegroundColor= ConsoleColor.Red;
-            else if (i > 1) Console.ForegroundColor= ConsoleColor.Yellow;
-            else Console.ForegroundColor= ConsoleColor.Green;
+            if (i > 3) Console.ForegroundColor = ConsoleColor.Red;
+            else if (i > 1) Console.ForegroundColor = ConsoleColor.Yellow;
+            else Console.ForegroundColor = ConsoleColor.Green;
 
             Console.Write("  " + intento[j]);
             Console.ResetColor();
         }
 
     }
+
     /// <summary>
     /// Printa el titulo de wordle
     /// </summary>
@@ -630,7 +660,7 @@ public class Wordle
     {
         Console.ForegroundColor = ConsoleColor.DarkGreen;
         Console.WriteLine(File.ReadAllText(pathLang + @"welcome.txt"));
-        Console.ResetColor();              
+        Console.ResetColor();
         Console.WriteLine(File.ReadAllText(pathLang + @"newGame.txt"));
         Console.WriteLine(File.ReadAllText(pathLang + @"selectLang.txt"));
         Console.WriteLine(File.ReadAllText(pathLang + @"games.txt"));
@@ -643,12 +673,23 @@ public class Wordle
     /// <param name="pathLang"></param>
     static void PrintFailWord(string pathLang)
     {
-        Console.ForegroundColor= ConsoleColor.DarkRed;
+        Console.ForegroundColor = ConsoleColor.DarkRed;
         Console.WriteLine(File.ReadAllText(pathLang + @"fail.txt"));
         Console.ResetColor();
     }
 
-    public PlayerGame CreatePlayer(string playerNameOf, string gameLanguageOf, string secretWordOf, List<string> listWordOf, int contadorOf, ConsoleColor colorOf, string dateOf)
+    /// <summary>
+    /// Esta funcion me retorna el objeto PlayerGame
+    /// </summary>
+    /// <param name="playerNameOf"></param>
+    /// <param name="gameLanguageOf"></param>
+    /// <param name="secretWordOf"></param>
+    /// <param name="listWordOf"></param>
+    /// <param name="contadorOf"></param>
+    /// <param name="colorOf"></param>
+    /// <param name="dateOf"></param>
+    /// <returns>Object PlayerGame</returns>
+    public static PlayerGame CreatePlayer(string playerNameOf, string gameLanguageOf, string secretWordOf, List<string> listWordOf, int contadorOf, ConsoleColor colorOf, string dateOf)
     {
         PlayerGame jugador = new PlayerGame
         {
@@ -664,30 +705,6 @@ public class Wordle
         return jugador;
     }
 }
-
-    /// <summary>
-    /// Esta funcion me permite quitar los acentos de una lista de palabras
-    /// </summary>
-    /* void Accentos()
-     {
-         string path = @"..\..\..\palabras.txt";
-         string todo;
-
-         using (StreamReader sr = new StreamReader(path))
-         {
-             todo = sr.ReadToEnd();
-         }
-
-         todo = todo.Replace('á', 'a').Replace('í', 'i').Replace('ó', 'o').Replace('ú', 'u').Replace('é', 'e');
-
-         using (StreamWriter sw = new StreamWriter(@"..\..\..\palabrasSin.txt"))
-         {
-             sw.Write(todo);
-         }
-
-     }
-    */
-
 
 //He creado esta clase para crear partidas para el historial max facilmente
 public class PlayerGame

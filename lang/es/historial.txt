@@ -1,3 +1,7 @@
 {"playerName":"carlos","date":"28/02/2023 01:38:20","gameLanguage":"\\ES\\","secretWord":"sopas","listWord":["cacao","cacao","cacao","cacao","cacao","sopas"],"contador":6,"color":10}
 {"playerName":"iulia","date":"28/02/2023 01:38:30","gameLanguage":"\\ES\\","secretWord":"coral","listWord":["cacao","cacao","cacao","cacao","cacao","cacao"],"contador":6,"color":12}
 {"playerName":"carlos","date":"28/02/2023 01:39:30","gameLanguage":"\\ES\\","secretWord":"venir","listWord":["cacao","cacao","cacao","cacao","cacao","cacao"],"contador":6,"color":12}
+{"playerName":"carlos","date":"28/02/2023 10:18:22","gameLanguage":"\\ES\\","secretWord":"cajas","listWord":["cacao","cacas","capas","caras","casas","cajas"],"contador":6,"color":10}
+{"playerName":"carlos","date":"28/02/2023 10:31:48","gameLanguage":"\\ES\\","secretWord":"halos","listWord":["cacao","fabia","casta","santo","mando","fdafg"],"contador":6,"color":12}
+{"playerName":"Lozano","date":"28/02/2023 10:47:51","gameLanguage":"\\ES\\","secretWord":"avala","listWord":["raton","salon","limas","alcon","arcon","cacas"],"contador":6,"color":12}
+{"playerName":"Esther","date":"28/02/2023 22:50:46","gameLanguage":"\\ES\\","secretWord":"ollas","listWord":["mamas","papas","vacas","casas","pocas","otras"],"contador":6,"color":12}
