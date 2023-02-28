@@ -2,6 +2,7 @@
  DATE: 12/12/2022
  DESCRIPTION: Aquesta es la meva versió del famós joc Wordle. Projecto troncal de la M03, UF1, UF2 i UF3 */
 
+using System.Text.Json;
 
 namespace Wordlee;
 public class Wordle
@@ -33,22 +34,25 @@ public class Wordle
             switch (select)
             {
                 case "1":
-                    Game(pathLang, generalPath);
+                    counterFail = 0;
+                    Game(pathLang, generalPath, lang);
                     break;
                 case "2":
+                    counterFail = 0;
                     lang = Languague(generalPath);
                     break;
                 case "3":
-
+                    counterFail = 0;
+                    SeeHistorial(pathLang);
                     break;
                 case "4":
-
+                    Console.Clear();
+                    select = "end";
                     break;
                 default:
-                    PrintFailWord(pathLang);
+                    counterFail++;
                     break;
             }
-            counterFail++;
 
         } while (select != "end");
     }
@@ -88,7 +92,7 @@ public class Wordle
     /// Esta funcion es la que engobla toda la parte del gaming
     /// </summary>
     /// <param name="lang"></param>
-    void Game(string pathLang,string generalPath)
+    void Game(string pathLang,string generalPath, string lang)
     {
   
         string pathWords = pathLang + @"\palabrasSin.txt";
@@ -99,7 +103,7 @@ public class Wordle
         int winIntento = 0;
         int numIntentos = 6;
 
-        bool win = false;
+        bool win;
         bool ASCII;
 
 
@@ -109,27 +113,30 @@ public class Wordle
 
         do//aquest for fa de contador
         {
+            win = false;
             palabraClave = GetWord(pathWords).ToLower();//poso a majuscules les paraules clau 
             palabrasIntroducidas.RemoveRange(0, palabrasIntroducidas.Count);
 
             for (int i = 0; i < numIntentos  && palabra != "end"; i++)
             {
-                int counterFail = 0;
+                int counterFailWord = 0;
                 winIntento = i;
                 if (i != 0)
                 {
                     Console.Clear();
+                    Console.WriteLine(palabraClave);
                     PrintAllThings(palabrasIntroducidas, palabraClave, listOfColors, listOfWords, pathLang, winIntento, generalPath);
                 }
                 else
                 {
+                    Console.WriteLine(palabraClave);
                     Console.Clear();
                     PrintTitleWordle(pathLang);
                     PrintTry(SelectFichCounter(winIntento,pathLang, generalPath),winIntento);
                 }
                 do
                 {
-                    if(counterFail !=0) PrintFailWord(pathLang);
+                    if(counterFailWord !=0) PrintFailWord(pathLang);
                     ASCII = false;
                     Console.WriteLine();
                     palabra = Console.ReadLine().ToLower();//demano una paraula
@@ -138,7 +145,7 @@ public class Wordle
                     {
                         if (NotGoodASCII(item)) ASCII = true;
                     }
-                    counterFail++;
+                    counterFailWord++;
                 }
                 while (NotLengthWord(palabra, palabraClave) && NotTheEnd(palabra) || ASCII == true);//es fa un bucle mentres la paraulaClau no sigui igual a la paraula introduida
 
@@ -152,37 +159,76 @@ public class Wordle
                 else if (MaxTryTaked(i,numIntentos)) i = numIntentos;
 
             }
-            if(palabra != "end") EndPrint(win, palabraClave, palabrasIntroducidas, listOfColors, listOfWords, winIntento, pathLang, generalPath);
+            if(palabra != "end") EndPrint(win, palabraClave, palabrasIntroducidas, listOfColors, listOfWords, winIntento, pathLang, generalPath,lang);
             palabra = RetryGame(pathLang);
         } while (palabra != "end");
 
     }
+    /// <summary>
+    /// Si las palabras TRUE cuando las palabras no estan dentro del codigo ASCII deseado
+    /// </summary>
+    /// <param name="item"></param>
+    /// <returns></returns>
     bool NotGoodASCII(char item)
     {
         return item < 97 || item > 123;
     }
+
+    /// <summary>
+    /// Retorna TRUE si la palabra recibida no es end
+    /// </summary>
+    /// <param name="palabra"></param>
+    /// <returns></returns>
     bool NotTheEnd(string palabra)
     {
         return palabra != "end";
     }
+
+    /// <summary>
+    /// Devuelve TRUE si el Lenght de la palabra no es el adecuado
+    /// </summary>
+    /// <param name="word"></param>
+    /// <param name="palabraClave"></param>
+    /// <returns></returns>
     bool NotLengthWord(string word, string palabraClave)
     {
         return word.Length != palabraClave.Length;
     }
+
+    /// <summary>
+    /// Devuelve TRUE si el numero maximo de intentos es el mismo que los que lleva
+    /// </summary>
+    /// <param name="i"></param>
+    /// <param name="numIntentos"></param>
+    /// <returns></returns>
     bool MaxTryTaked(int i, int numIntentos)
     {
         return i == numIntentos - 1;
     }
+
+    /// <summary>
+    /// Si las palabras coincides devuelve TRUE
+    /// </summary>
+    /// <param name="palabra"></param>
+    /// <param name="palabraClave"></param>
+    /// <returns></returns>
     bool IsVictory(string palabra, string palabraClave)
     {
         return palabra == palabraClave;
     }
-
+    
+    /// <summary>
+    /// Devuelve un string al preguntar si se quiere continuar o no el juego
+    /// </summary>
+    /// <param name="pathLang"></param>
+    /// <returns></returns>
     string RetryGame(string pathLang)
     {
         string retry = "";
         string option;
 
+        Console.WriteLine();
+        Console.WriteLine();
         Console.WriteLine(File.ReadAllText(pathLang + @"retry.txt"));
         Console.WriteLine(File.ReadAllText(pathLang + @"yn.txt"));
         
@@ -206,12 +252,79 @@ public class Wordle
 
 
     }
-    void EndPrint(bool win, string palabraClave, List<string> palabrasIntroducidas, ConsoleColor[,] listOfColors, List<string[]> list, int winIntento, string pathLang, string generalPath)
+
+    /// <summary>
+    /// Este procedimiento escribe en el documento historail
+    /// </summary>
+    /// <param name="pathLang"></param>
+    /// <param name="intentos"></param>
+    /// <param name="palabrasIntr"></param>
+    /// <param name="palabraClave"></param>
+    void AddGameToFile(string pathLang, int intentos, List<string> palabrasIntr, string palabraClave, ConsoleColor color, string dateOf, string lang)
+    {
+        Console.WriteLine(File.ReadAllText(pathLang + @"\yourName.txt"));
+        string player = Console.ReadLine();
+
+        var gamePlayer = CreatePlayer(player, lang.ToUpper(), palabraClave, palabrasIntr,intentos, color, dateOf);
+
+        using StreamWriter sw = File.AppendText(pathLang + @"\historial.txt");
+        {
+            sw.WriteLine(JsonSerializer.Serialize(gamePlayer));
+        }
+    }
+
+    void SeeHistorial(string pathLang)
+    {
+        Console.Clear();
+        Console.WriteLine();
+        Console.WriteLine(File.ReadAllText(pathLang + @"games.txt"));
+
+        using (StreamReader sr = new StreamReader(pathLang + @"\historial.txt"))
+        {
+            string lane;
+            while((lane = sr.ReadLine())!= null)
+            {
+                var game = JsonSerializer.Deserialize<PlayerGame>(lane);
+                Console.WriteLine();
+                Console.Write($"\tPlayer: {game.playerName} \tFecha: {game.date} \tIntentos: {game.contador} \tPalabraSecreta: ");
+                Console.ForegroundColor = game.color;
+                Console.Write(game.secretWord);
+                Console.ResetColor();
+                Console.Write("\tPalabras: ");
+
+                foreach (var item in game.listWord)
+                {
+                    Console.Write(" | "+ item);
+                }
+                Console.WriteLine();
+            }
+        }
+
+        Console.WriteLine("\n\n");
+        Console.WriteLine("[PULSA CUALQUIER INPUT PARA SALIR]");
+        Console.ReadLine();
+    }
+
+    /// <summary>
+    /// Este procedimiento hace el print final te todos los datos del juego necesarios
+    /// </summary>
+    /// <param name="win"></param>
+    /// <param name="palabraClave"></param>
+    /// <param name="palabrasIntroducidas"></param>
+    /// <param name="listOfColors"></param>
+    /// <param name="list"></param>
+    /// <param name="winIntento"></param>
+    /// <param name="pathLang"></param>
+    /// <param name="generalPath"></param>
+   
+
+    void EndPrint(bool win, string palabraClave, List<string> palabrasIntroducidas, ConsoleColor[,] listOfColors, List<string[]> list, int winIntento, string pathLang, string generalPath,string lang)
     {
         Console.Clear();
         string[] letras = new string[palabraClave.Length];
         ConsoleColor color;
         string winOrLose;
+        winIntento++;
 
         for (int i = 0; i < palabraClave.Length; i++)
         {
@@ -234,6 +347,8 @@ public class Wordle
         Console.WriteLine(File.ReadAllText(pathLang + winOrLose));
         PrintLettersWinOrLose(letras, color);
         Console.ReadLine();
+
+        AddGameToFile(pathLang, winIntento, palabrasIntroducidas, palabraClave, color, DateTime.Now.ToString("dd/MM/yyyy hh:mm:ss"),lang);
 
         Console.Clear();//clean
     }
@@ -342,28 +457,6 @@ public class Wordle
         }
 
         return list;
-    }
-
-    /// <summary>
-    /// Esta funcion me permite quitar los acentos de una lista de palabras
-    /// </summary>
-    void Accentos()
-    {
-        string path = @"..\..\..\palabras.txt";
-        string todo;
-
-        using (StreamReader sr = new StreamReader(path))
-        {
-            todo = sr.ReadToEnd();
-        }
-
-        todo = todo.Replace('á', 'a').Replace('í', 'i').Replace('ó', 'o').Replace('ú', 'u').Replace('é', 'e');
-
-        using (StreamWriter sw = new StreamWriter(@"..\..\..\palabrasSin.txt"))
-        {
-            sw.Write(todo);
-        }
-
     }
 
     /// <summary>
@@ -483,9 +576,10 @@ public class Wordle
             Console.WriteLine();
             Console.Write(titulo[j]);
 
-            if (i >= 6) Console.ForegroundColor = ConsoleColor.Red;
-            else if (i >= 3) Console.ForegroundColor = ConsoleColor.Yellow;
-            else if (i >= 1) Console.ForegroundColor = ConsoleColor.Green;
+            if( i > 3) Console.ForegroundColor= ConsoleColor.Red;
+            else if (i > 1) Console.ForegroundColor= ConsoleColor.Yellow;
+            else Console.ForegroundColor= ConsoleColor.Green;
+
             Console.Write("  " + intento[j]);
             Console.ResetColor();
         }
@@ -501,6 +595,10 @@ public class Wordle
         Console.ResetColor();
     }
 
+    /// <summary>
+    /// Printa la interfaz del menu
+    /// </summary>
+    /// <param name="pathLang"></param>
     void PrintAllStart(string pathLang)
     {
         Console.ForegroundColor = ConsoleColor.DarkGreen;
@@ -512,30 +610,66 @@ public class Wordle
         Console.WriteLine(File.ReadAllText(pathLang + @"exit.txt"));
     }
 
+    /// <summary>
+    /// Printa una advertencia de que el input utilizado no es el adecuado
+    /// </summary>
+    /// <param name="pathLang"></param>
     void PrintFailWord(string pathLang)
     {
         Console.ForegroundColor= ConsoleColor.DarkRed;
         Console.WriteLine(File.ReadAllText(pathLang + @"fail.txt"));
         Console.ResetColor();
     }
-    /*  void Print(char letra, ConsoleColor color)
-      {
-          string pathFolderLetters = @"..\..\..\letters\";
-          string letter = File.ReadAllText(pathFolderLetters + letra + ".txt");
 
-          Console.ForegroundColor = color;
+    public PlayerGame CreatePlayer(string playerNameOf, string gameLanguageOf, string secretWordOf, List<string> listWordOf, int contadorOf, ConsoleColor colorOf, string dateOf)
+    {
+        PlayerGame jugador = new PlayerGame
+        {
+            playerName = playerNameOf,
+            date = dateOf,
+            gameLanguage = gameLanguageOf,
+            secretWord = secretWordOf,
+            listWord = listWordOf,
+            contador = contadorOf,
+            color = colorOf
+        };
 
-          Console.Write(letter);
-          Console.ResetColor();
+        return jugador;
+    }
+}
 
-      }
+    /// <summary>
+    /// Esta funcion me permite quitar los acentos de una lista de palabras
+    /// </summary>
+    /* void Accentos()
+     {
+         string path = @"..\..\..\palabras.txt";
+         string todo;
 
-      void PrintWord(string palabra, ConsoleColor color)
-      {
+         using (StreamReader sr = new StreamReader(path))
+         {
+             todo = sr.ReadToEnd();
+         }
 
-          Console.ForegroundColor = color;
-          Console.Write(palabra + "\t");
-          Console.ResetColor();
-      }
+         todo = todo.Replace('á', 'a').Replace('í', 'i').Replace('ó', 'o').Replace('ú', 'u').Replace('é', 'e');
+
+         using (StreamWriter sw = new StreamWriter(@"..\..\..\palabrasSin.txt"))
+         {
+             sw.Write(todo);
+         }
+
+     }
     */
+
+
+public class PlayerGame
+{
+    public string playerName { get; set; }
+    public string date { get; set; }
+    public string gameLanguage { get; set; }
+    public string secretWord { get; set; }
+    public List<string> listWord { get; set; }
+    public int contador { get; set; }
+    public ConsoleColor color { get; set; }
+
 }
